@@ -1,0 +1,55 @@
+name: Terraform CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/**'
+      - '.github/workflows/terraform.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'infra/**'
+      - '.github/workflows/terraform.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: Terraform format check
+        run: terraform fmt -check -recursive
+        working-directory: infra
+
+      - name: Terraform init
+        run: terraform init -backend=false
+        working-directory: infra
+
+      - name: Terraform validate
+        run: terraform validate
+        working-directory: infra
+
+      - name: Terraform plan
+        run: terraform plan -out=tfplan
+        working-directory: infra
+        env:
+          TF_IN_AUTOMATION: true
+        continue-on-error: true
+
+      - name: Upload plan
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-plan
+          path: infra/tfplan
+          retention-days: 7

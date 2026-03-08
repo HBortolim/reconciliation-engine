@@ -1,0 +1,71 @@
+name: API CI
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'services/api/**'
+      - '.github/workflows/api.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'services/api/**'
+      - '.github/workflows/api.yml'
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: reconciliation_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore dependencies
+        working-directory: services/api
+        run: dotnet restore ReconciliationEngine.sln
+      - name: Build
+        working-directory: services/api
+        run: dotnet build ReconciliationEngine.sln -c Release --no-restore
+      - name: Run tests
+        working-directory: services/api
+        run: dotnet test ReconciliationEngine.sln -c Release --no-build --verbosity normal --logger "console;verbosity=detailed"
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: reconciliation_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+      - name: Upload coverage
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage.xml
+          flags: csharp
+          fail_ci_if_error: false

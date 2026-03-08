@@ -1,0 +1,791 @@
+openapi: 3.0.3
+info:
+  title: Reconciliation Engine API
+  description: |
+    REST API for the Automated Payment Reconciliation Engine.
+    Manages reconciliation runs, exceptions, acquirer contracts, and reporting
+    for Brazilian SMB payment reconciliation.
+  version: 1.0.0
+  contact:
+    name: Reconciliation Engine
+    url: https://github.com/hbortolim/reconciliation-engine
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+tags:
+  - name: Reconciliation Runs
+    description: Trigger and monitor reconciliation runs
+  - name: Exceptions
+    description: Manage reconciliation exceptions
+  - name: Acquirer Contracts
+    description: CRUD for acquirer commercial contracts
+  - name: Fee Analysis
+    description: Fee divergence analysis and reporting
+  - name: Reports
+    description: Reconciliation reports and exports
+  - name: Health
+    description: Service health checks
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  version:
+                    type: string
+                    example: 1.0.0
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/v1/runs:
+    get:
+      tags: [Reconciliation Runs]
+      summary: List reconciliation runs
+      operationId: listRuns
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/RunStatus'
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of reconciliation runs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReconciliationRun'
+                  totalCount:
+                    type: integer
+                  page:
+                    type: integer
+                  pageSize:
+                    type: integer
+    post:
+      tags: [Reconciliation Runs]
+      summary: Trigger a new reconciliation run
+      operationId: triggerRun
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Payment files to reconcile
+                sourceTypes:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SourceType'
+                  description: Source type for each file (in order)
+      responses:
+        '202':
+          description: Run accepted and processing started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationRun'
+
+  /api/v1/runs/{runId}:
+    get:
+      tags: [Reconciliation Runs]
+      summary: Get reconciliation run details
+      operationId: getRunById
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Run details with statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationRunDetail'
+        '404':
+          description: Run not found
+
+  /api/v1/runs/{runId}/pairs:
+    get:
+      tags: [Reconciliation Runs]
+      summary: Get matched pairs for a run
+      operationId: getRunPairs
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: matchType
+          in: query
+          schema:
+            $ref: '#/components/schemas/MatchType'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Matched transaction pairs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReconciliationPair'
+                  totalCount:
+                    type: integer
+
+  /api/v1/exceptions:
+    get:
+      tags: [Exceptions]
+      summary: List exceptions with filters
+      operationId: listExceptions
+      parameters:
+        - name: runId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ResolutionStatus'
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/ExceptionType'
+        - name: severity
+          in: query
+          schema:
+            $ref: '#/components/schemas/Severity'
+        - name: agingBucket
+          in: query
+          schema:
+            type: string
+            enum: [0-7, 8-15, 16-30, 30+]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Filtered list of exceptions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Exception'
+                  totalCount:
+                    type: integer
+
+  /api/v1/exceptions/{exceptionId}/resolve:
+    post:
+      tags: [Exceptions]
+      summary: Resolve an exception
+      operationId: resolveException
+      parameters:
+        - name: exceptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [resolutionNote, action]
+              properties:
+                resolutionNote:
+                  type: string
+                  minLength: 1
+                  description: Mandatory justification for audit trail
+                action:
+                  type: string
+                  enum: [resolve, ignore]
+      responses:
+        '200':
+          description: Exception resolved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exception'
+        '409':
+          description: Invalid state transition
+
+  /api/v1/contracts:
+    get:
+      tags: [Acquirer Contracts]
+      summary: List all acquirer contracts
+      operationId: listContracts
+      responses:
+        '200':
+          description: List of acquirer contracts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AcquirerContract'
+    post:
+      tags: [Acquirer Contracts]
+      summary: Create a new acquirer contract
+      operationId: createContract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContractRequest'
+      responses:
+        '201':
+          description: Contract created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcquirerContract'
+
+  /api/v1/contracts/{contractId}:
+    get:
+      tags: [Acquirer Contracts]
+      summary: Get contract details with fee schedules
+      operationId: getContractById
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Contract with fee schedules
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcquirerContract'
+
+  /api/v1/fee-analysis:
+    get:
+      tags: [Fee Analysis]
+      summary: Get fee analysis for a period
+      operationId: getFeeAnalysis
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: acquirerId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fee analysis results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeAnalysisReport'
+
+  /api/v1/reports/reconciliation-summary:
+    get:
+      tags: [Reports]
+      summary: Daily reconciliation summary
+      operationId: getReconciliationSummary
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Reconciliation summary for the given date
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationSummary'
+
+  /api/v1/reports/aging:
+    get:
+      tags: [Reports]
+      summary: Aging report for unreconciled items
+      operationId: getAgingReport
+      responses:
+        '200':
+          description: Aging buckets with counts and amounts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgingReport'
+
+  /api/v1/reports/export/{runId}:
+    get:
+      tags: [Reports]
+      summary: Export reconciliation results
+      operationId: exportRunReport
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [pdf, xlsx, csv, json]
+      responses:
+        '200':
+          description: Exported file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+components:
+  schemas:
+    SourceType:
+      type: string
+      enum: [PIX, BOLETO, CARD_CREDIT, CARD_DEBIT, TED, DOC, DEBITO_AUTOMATICO]
+
+    MatchType:
+      type: string
+      enum: [EXACT, FUZZY, AGGREGATE]
+
+    ExceptionType:
+      type: string
+      enum: [FEE_DIVERGENCE, TIMING_MISMATCH, PARTIAL_PAYMENT, DUPLICATE, CHARGEBACK, PIX_DEVOLUCAO, BOLETO_NOT_COMPENSATED, UNKNOWN]
+
+    Severity:
+      type: string
+      enum: [LOW, MEDIUM, HIGH, CRITICAL]
+
+    RunStatus:
+      type: string
+      enum: [CREATED, INGESTING, MATCHING, CLASSIFYING, COMPLETED, FAILED]
+
+    ResolutionStatus:
+      type: string
+      enum: [OPEN, IN_REVIEW, RESOLVED, IGNORED]
+
+    ReconciliationRun:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/RunStatus'
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        filesIngested:
+          type: array
+          items:
+            type: string
+        totalRecordsIngested:
+          type: integer
+        matchedCount:
+          type: integer
+        exceptionCount:
+          type: integer
+        processingDurationMs:
+          type: integer
+          nullable: true
+
+    ReconciliationRunDetail:
+      allOf:
+        - $ref: '#/components/schemas/ReconciliationRun'
+        - type: object
+          properties:
+            reconciliationRate:
+              type: number
+              format: double
+              description: Percentage of matched records (0-100)
+            matchTypeBreakdown:
+              type: object
+              properties:
+                exact:
+                  type: integer
+                fuzzy:
+                  type: integer
+                aggregate:
+                  type: integer
+            exceptionTypeBreakdown:
+              type: object
+              additionalProperties:
+                type: integer
+
+    TransactionRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sourceType:
+          $ref: '#/components/schemas/SourceType'
+        amountCentavos:
+          type: integer
+          format: int64
+        feeCentavos:
+          type: integer
+          format: int64
+        netAmountCentavos:
+          type: integer
+          format: int64
+        expectedSettlementDate:
+          type: string
+          format: date
+          nullable: true
+        actualSettlementDate:
+          type: string
+          format: date
+          nullable: true
+        counterpartyDocument:
+          type: string
+          nullable: true
+        externalId:
+          type: string
+        fingerprintHash:
+          type: string
+        sourceFile:
+          type: string
+        parsedAt:
+          type: string
+          format: date-time
+
+    ReconciliationPair:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        expectedRecord:
+          $ref: '#/components/schemas/TransactionRecord'
+        actualRecord:
+          $ref: '#/components/schemas/TransactionRecord'
+        matchType:
+          $ref: '#/components/schemas/MatchType'
+        confidenceScore:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+        amountDeltaCentavos:
+          type: integer
+          format: int64
+        dateDeltaDays:
+          type: integer
+        feeDeltaCentavos:
+          type: integer
+          format: int64
+
+    Exception:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        runId:
+          type: string
+          format: uuid
+        transactionRecord:
+          $ref: '#/components/schemas/TransactionRecord'
+        exceptionType:
+          $ref: '#/components/schemas/ExceptionType'
+        severity:
+          $ref: '#/components/schemas/Severity'
+        suggestedAction:
+          type: string
+          nullable: true
+        resolutionStatus:
+          $ref: '#/components/schemas/ResolutionStatus'
+        resolutionNote:
+          type: string
+          nullable: true
+        resolvedBy:
+          type: string
+          nullable: true
+        resolvedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        daysSinceCreation:
+          type: integer
+          description: Age in days for aging dashboard
+
+    AcquirerContract:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        acquirerId:
+          type: string
+        acquirerName:
+          type: string
+        version:
+          type: integer
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo:
+          type: string
+          format: date
+          nullable: true
+        feeSchedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeeSchedule'
+
+    FeeSchedule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bandeira:
+          type: string
+          description: Card brand (Visa, Mastercard, Elo, Hipercard, Amex)
+        produto:
+          type: string
+          description: Product type (credito_avista, parcelado_lojista, debito)
+        mdrBasisPoints:
+          type: integer
+          description: MDR rate in basis points (e.g., 189 = 1.89%)
+        antecipacaoBasisPoints:
+          type: integer
+          description: Antecipação rate in basis points
+        settlementDays:
+          type: integer
+          description: Days to settlement (e.g., 30 for D+30)
+
+    CreateContractRequest:
+      type: object
+      required: [acquirerId, acquirerName, effectiveFrom, feeSchedules]
+      properties:
+        acquirerId:
+          type: string
+        acquirerName:
+          type: string
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo:
+          type: string
+          format: date
+          nullable: true
+        feeSchedules:
+          type: array
+          items:
+            type: object
+            required: [bandeira, produto, mdrBasisPoints, settlementDays]
+            properties:
+              bandeira:
+                type: string
+              produto:
+                type: string
+              mdrBasisPoints:
+                type: integer
+              antecipacaoBasisPoints:
+                type: integer
+                default: 0
+              settlementDays:
+                type: integer
+
+    FeeAnalysisReport:
+      type: object
+      properties:
+        period:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+        totalTransactions:
+          type: integer
+        totalExpectedFeeCentavos:
+          type: integer
+          format: int64
+        totalActualFeeCentavos:
+          type: integer
+          format: int64
+        totalOverpaymentCentavos:
+          type: integer
+          format: int64
+        byAcquirer:
+          type: array
+          items:
+            type: object
+            properties:
+              acquirerId:
+                type: string
+              acquirerName:
+                type: string
+              transactionCount:
+                type: integer
+              expectedFeeCentavos:
+                type: integer
+                format: int64
+              actualFeeCentavos:
+                type: integer
+                format: int64
+              overpaymentCentavos:
+                type: integer
+                format: int64
+              divergenceCount:
+                type: integer
+
+    ReconciliationSummary:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        totalRecords:
+          type: integer
+        matchedRecords:
+          type: integer
+        exceptionRecords:
+          type: integer
+        reconciliationRate:
+          type: number
+          format: double
+        totalAmountCentavos:
+          type: integer
+          format: int64
+        matchedAmountCentavos:
+          type: integer
+          format: int64
+        processingDurationMs:
+          type: integer
+
+    AgingReport:
+      type: object
+      properties:
+        generatedAt:
+          type: string
+          format: date-time
+        totalUnreconciled:
+          type: integer
+        totalAmountCentavos:
+          type: integer
+          format: int64
+        buckets:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+                description: e.g., "0-7 days", "8-15 days", "16-30 days", "30+ days"
+              count:
+                type: integer
+              amountCentavos:
+                type: integer
+                format: int64
+              percentage:
+                type: number
+                format: double
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

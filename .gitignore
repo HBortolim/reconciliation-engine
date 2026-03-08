@@ -1,0 +1,120 @@
+# Go
+*.o
+*.a
+*.so
+.DS_Store
+/bin
+/dist
+vendor/
+*.test
+*.out
+coverage.out
+coverage.html
+
+# C# / .NET
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln.docstates
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.localhistory/
+*.csproj.user
+packages/
+.ncrunchproject
+.ncrunch*
+_NCrunch*
+.ReSharper*
+*.resharper
+*.ReSharper
+reSharper*
+_ReSharper*
+.StyleCop*
+stylecop.cache
+
+# Node.js / React / Vite
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
+.pnp.js
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+pnpm-debug.log*
+
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Environment / Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+
+# OS / Common
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+*~
+.gitkeep
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Build artifacts
+dist/
+build/
+.next/
+out/
+
+# Testing
+coverage/
+.nyc_output/
+__coverage__/
+
+# Misc
+*.tmp
+.cache/
+temp/
+tmp/
