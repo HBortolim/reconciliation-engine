@@ -7,9 +7,9 @@ import (
 
 // BankingHoliday represents a Brazilian banking holiday.
 type BankingHoliday struct {
-	Date        time.Time
-	Name        string
-	IsMoveable  bool // e.g., Easter, Carnival
+	Date       time.Time
+	Name       string
+	IsMoveable bool // e.g., Easter, Carnival
 }
 
 // 2026 Brazilian Banking Holidays (Anbima)
@@ -77,8 +77,8 @@ func generateCalendar(year int) {
 			Date: currentDate,
 		}
 
-		// Check for weekend
-		if dayOfWeek == time.Saturday || dayOfWeek == time.Sunday {
+		isWeekend := dayOfWeek == time.Saturday || dayOfWeek == time.Sunday
+		if isWeekend {
 			entry.IsWeekend = true
 			weekendDays++
 		} else {
@@ -91,7 +91,10 @@ func generateCalendar(year int) {
 			entry.IsHoliday = true
 			entry.HolidayName = holiday.Name
 			holidayCount++
-			businessDays-- // Don't count holidays as business days
+			// Only subtract from businessDays if the holiday falls on a weekday
+			if !isWeekend {
+				businessDays--
+			}
 		}
 
 		// Print holidays only

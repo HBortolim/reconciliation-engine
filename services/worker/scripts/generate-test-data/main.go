@@ -16,9 +16,6 @@ func main() {
 	fmt.Println("============================================")
 	fmt.Println()
 
-	// Set random seed
-	rand.Seed(time.Now().UnixNano())
-
 	// Generate test data for each format
 	generatePixTestData()
 	generateCNABTestData()
