@@ -1,8 +1,6 @@
 package fuzzy
 
 import (
-	"time"
-
 	"github.com/hbortolim/reconciliation-engine/internal/matching"
 	"github.com/hbortolim/reconciliation-engine/internal/parsers/common"
 )

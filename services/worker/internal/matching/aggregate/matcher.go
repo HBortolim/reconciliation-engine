@@ -1,7 +1,6 @@
 package aggregate
 
 import (
-	"fmt"
 	"sort"
 
 	"github.com/hbortolim/reconciliation-engine/internal/matching"
@@ -145,9 +144,9 @@ func (m *Matcher) solveSubsetSum(transactions []common.TransactionRecord, target
 	}
 
 	// DP table: dp[i][j] = can we achieve sum j using first i items?
-	maxSum := targetAmount + (m.Config.AmountToleranceCentavos * 2)
+	maxSum := int(targetAmount + (m.Config.AmountToleranceCentavos * 2))
 	if maxSum < 0 {
-		maxSum = targetAmount + 10000
+		maxSum = int(targetAmount + 10000)
 	}
 
 	// For efficiency, limit the DP table size
@@ -170,7 +169,7 @@ func (m *Matcher) solveSubsetSum(transactions []common.TransactionRecord, target
 
 	// Fill DP table
 	for i := 1; i <= n; i++ {
-		amount := transactions[i-1].AmountCentavos
+		amount := int(transactions[i-1].AmountCentavos)
 		for j := 0; j <= maxSum; j++ {
 			// Don't take item i-1
 			if dp[i-1][j] {
