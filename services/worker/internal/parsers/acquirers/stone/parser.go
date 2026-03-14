@@ -19,27 +19,20 @@ func NewParser() *Parser {
 }
 
 // Parse reads a Stone JSON settlement file and returns a slice of TransactionRecord.
+// Expected JSON structure: { "transactions": [ { "id", "amount", "status", "created_at", "customer", "nsu" } ] }
 func (p *Parser) Parse(reader io.Reader, filename string) ([]common.TransactionRecord, error) {
-	var data interface{}
-	if err := json.NewDecoder(reader).Decode(&data); err != nil {
+	var payload struct {
+		Transactions []StoneTransaction `json:"transactions"`
+	}
+	if err := json.NewDecoder(reader).Decode(&payload); err != nil {
 		return nil, fmt.Errorf("failed to parse JSON: %w", err)
 	}
 
-	var records []common.TransactionRecord
-
-	// TODO: Implement Stone JSON parsing
-	// Expected structure based on Stone API:
-	// {
-	//   "transactions": [
-	//     {
-	//       "id": "...",
-	//       "amount": 1000,
-	//       "status": "captured",
-	//       "created_at": "2024-03-08T10:00:00Z",
-	//       "customer": { "document": "12345678901234" }
-	//     }
-	//   ]
-	// }
+	records := make([]common.TransactionRecord, 0, len(payload.Transactions))
+	for i := range payload.Transactions {
+		record := p.parseStoneTransaction(&payload.Transactions[i], filename)
+		records = append(records, *record)
+	}
 
 	return records, nil
 }

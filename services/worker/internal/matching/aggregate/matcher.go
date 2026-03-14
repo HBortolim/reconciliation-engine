@@ -58,7 +58,7 @@ func (m *Matcher) Match(expected, actual []common.TransactionRecord) (
 
 		// Find best subset match using branch-and-bound
 		subset := m.findBestSubset(expected, &act, matchedExpectedIndices)
-		if subset != nil && len(subset) > 0 {
+		if len(subset) > 0 {
 			// Create aggregated pair
 			pair := matching.ReconciliationPair{
 				Expected:        subset[0], // Use first as representative
