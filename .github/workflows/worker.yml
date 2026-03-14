@@ -71,6 +71,6 @@ jobs:
         if: always()
         uses: codecov/codecov-action@v3
         with:
-          files: ./coverage.out
+          files: services/worker/coverage.out
           flags: go
           fail_ci_if_error: false
