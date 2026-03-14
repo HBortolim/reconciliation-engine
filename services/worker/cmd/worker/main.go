@@ -48,7 +48,21 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Example: Listen for jobs (stub implementation)
+	jobChan := make(chan *Job)
+
+	// Job processor: reads from channel and runs reconciliation.
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case job := <-jobChan:
+				processJob(job)
+			}
+		}
+	}()
+
+	// Job poller: reads from Redis stream and dispatches to jobChan.
 	go func() {
 		for {
 			select {
@@ -56,7 +70,8 @@ func main() {
 				return
 			case <-time.After(5 * time.Second):
 				log.Println("Waiting for jobs...")
-				// TODO: Poll Redis stream for new jobs
+				// TODO: Poll Redis stream and send jobs to jobChan
+				_ = jobChan
 			}
 		}
 	}()
