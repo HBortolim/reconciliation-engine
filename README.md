@@ -93,7 +93,9 @@ The Go worker consumes file parsing and matching jobs from a Redis Stream. The C
 reconciliation-engine/
 ├── services/
 │   ├── api/                    # C# solution (Core, Infra, API projects)
-│   └── worker/                 # Go module (parsers, matching engine, CLI)
+│   └── worker/                 # Go module (parsers, matching engine)
+│       ├── cmd/worker/         # Production service: Redis Stream consumer
+│       ├── cmd/cli/            # Dev tool: manual file reconciliation via CLI flags
 │       └── testdata/           # Anonymized sample files per format
 ├── dashboard/                  # React + TypeScript + Vite
 ├── migrations/                 # PostgreSQL schema (shared)
@@ -134,10 +136,19 @@ psql -h localhost -U recon_user -d reconciliation -f migrations/001_initial_sche
 psql -h localhost -U recon_user -d reconciliation -f migrations/002_create_indexes_and_views.sql
 
 # 4. Run the services
-cd services/api  && dotnet run --project src/Reconciliation.Api
+cd services/api && dotnet run --project src/Reconciliation.Api
 cd services/worker && go run ./cmd/worker
 cd dashboard && npm install && npm run dev
+
+# Alternative: run a one-off reconciliation locally (no Redis needed)
+cd services/worker && go run ./cmd/cli \
+  --file path/to/file.ofx \
+  --source-type PIX \
+  --run-id my-test-run \
+  --debug
 ```
+
+See [docs/services-guide.md](docs/services-guide.md) for a full reference on all services, flags, and environment variables.
 
 ---
 
