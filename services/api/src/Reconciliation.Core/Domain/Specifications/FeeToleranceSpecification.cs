@@ -5,7 +5,7 @@ namespace ReconciliationEngine.Core.Domain.Specifications;
 
 /// <summary>
 /// Specification for evaluating if fees are within acceptable tolerance.
-/// Default tolerance is R$0.02 (2 centavos).
+/// Default tolerance is R$0.02 (2 cents).
 /// </summary>
 public class FeeToleranceSpecification : ISpecification<(TransactionRecord transaction, Money expectedFee)>
 {
@@ -13,7 +13,7 @@ public class FeeToleranceSpecification : ISpecification<(TransactionRecord trans
 
     public FeeToleranceSpecification(Money? tolerance = null)
     {
-        _tolerance = tolerance ?? Money.FromCentavos(2); // Default 2 centavos
+        _tolerance = tolerance ?? Money.FromCents(2); // Default 2 cents
     }
 
     public bool IsSatisfiedBy((TransactionRecord transaction, Money expectedFee) candidate)
@@ -21,11 +21,11 @@ public class FeeToleranceSpecification : ISpecification<(TransactionRecord trans
         if (candidate.transaction?.Fee == null || candidate.expectedFee == null)
             return false;
 
-        var delta = candidate.transaction.Fee.Centavos >= candidate.expectedFee.Centavos
-            ? candidate.transaction.Fee.Centavos - candidate.expectedFee.Centavos
-            : candidate.expectedFee.Centavos - candidate.transaction.Fee.Centavos;
+        var delta = candidate.transaction.Fee.Cents >= candidate.expectedFee.Cents
+            ? candidate.transaction.Fee.Cents - candidate.expectedFee.Cents
+            : candidate.expectedFee.Cents - candidate.transaction.Fee.Cents;
 
-        return delta <= _tolerance.Centavos;
+        return delta <= _tolerance.Cents;
     }
 
     public ISpecification<(TransactionRecord, Money)> And(ISpecification<(TransactionRecord, Money)> other)

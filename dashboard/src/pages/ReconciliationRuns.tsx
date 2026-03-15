@@ -66,7 +66,7 @@ const ReconciliationRuns: React.FC = () => {
                   <td className="px-6 py-4 text-sm text-green-600 font-medium">{run.matchedCount}</td>
                   <td className="px-6 py-4 text-sm text-red-600 font-medium">{run.exceptionCount}</td>
                   <td className="px-6 py-4 text-sm text-gray-900 font-mono">
-                    <MoneyDisplay centavos={run.statistics.totalAmount} />
+                    <MoneyDisplay cents={run.statistics.totalAmount} />
                   </td>
                 </tr>
               ))}

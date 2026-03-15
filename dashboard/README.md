@@ -14,7 +14,7 @@ dashboard/
 │   │   ├── Layout.tsx         # Main layout wrapper with sidebar
 │   │   ├── Sidebar.tsx        # Navigation sidebar
 │   │   ├── StatusBadge.tsx    # Color-coded status indicators
-│   │   ├── MoneyDisplay.tsx   # BRL currency formatter (centavos → R$)
+│   │   ├── MoneyDisplay.tsx   # BRL currency formatter (cents → R$)
 │   │   └── ConfidenceBar.tsx  # Visual confidence score bar (0-100%)
 │   ├── pages/
 │   │   ├── Dashboard.tsx      # Main dashboard with summary metrics

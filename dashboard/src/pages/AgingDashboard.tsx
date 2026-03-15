@@ -32,7 +32,7 @@ const AgingDashboard: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-gray-500 text-sm font-medium">Total Unreconciled Amount</h3>
           <p className="text-2xl font-mono font-bold text-gray-900 mt-2">
-            <MoneyDisplay centavos={totalAmount} />
+            <MoneyDisplay cents={totalAmount} />
           </p>
         </div>
       </div>
@@ -49,7 +49,7 @@ const AgingDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-lg font-mono font-bold text-gray-900">
-                  <MoneyDisplay centavos={bucket.amount} />
+                  <MoneyDisplay cents={bucket.amount} />
                 </p>
                 <p className="text-xs text-gray-500">Amount</p>
               </div>
@@ -86,7 +86,7 @@ const AgingDashboard: React.FC = () => {
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{bucket.label}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{bucket.count}</td>
                   <td className="px-6 py-4 text-sm text-gray-900 font-mono">
-                    <MoneyDisplay centavos={bucket.amount} />
+                    <MoneyDisplay cents={bucket.amount} />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
                     {((bucket.count / totalCount) * 100).toFixed(1)}%

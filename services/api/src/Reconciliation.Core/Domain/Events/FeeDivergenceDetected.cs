@@ -10,10 +10,10 @@ public record FeeDivergenceDetected : IDomainEvent
     public Guid PairId { get; init; }
     public Money ExpectedFee { get; init; }
     public Money ActualFee { get; init; }
-    public Money DeltaCentavos { get; init; }
+    public Money DeltaCents { get; init; }
     public DateTime OccurredAt { get; init; }
 
-    public FeeDivergenceDetected(Guid pairId, Money expectedFee, Money actualFee, Money deltaCentavos)
+    public FeeDivergenceDetected(Guid pairId, Money expectedFee, Money actualFee, Money deltaCents)
     {
         if (pairId == Guid.Empty)
             throw new ArgumentException("Pair ID cannot be empty.", nameof(pairId));
@@ -21,13 +21,13 @@ public record FeeDivergenceDetected : IDomainEvent
             throw new ArgumentNullException(nameof(expectedFee));
         if (actualFee == null)
             throw new ArgumentNullException(nameof(actualFee));
-        if (deltaCentavos == null)
-            throw new ArgumentNullException(nameof(deltaCentavos));
+        if (deltaCents == null)
+            throw new ArgumentNullException(nameof(deltaCents));
 
         PairId = pairId;
         ExpectedFee = expectedFee;
         ActualFee = actualFee;
-        DeltaCentavos = deltaCentavos;
+        DeltaCents = deltaCents;
         OccurredAt = DateTime.UtcNow;
     }
 }

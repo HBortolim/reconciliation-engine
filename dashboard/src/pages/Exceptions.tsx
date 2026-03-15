@@ -104,7 +104,7 @@ const Exceptions: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 font-mono">
                     {exc.discrepancyAmount ? (
-                      <MoneyDisplay centavos={exc.discrepancyAmount} />
+                      <MoneyDisplay cents={exc.discrepancyAmount} />
                     ) : (
                       "-"
                     )}

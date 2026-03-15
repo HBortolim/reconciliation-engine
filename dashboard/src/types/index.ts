@@ -45,7 +45,7 @@ export interface TransactionRecord {
   id: string;
   sourceType: SourceType;
   transactionId: string;
-  amount: number; // in centavos
+  amount: number; // in cents
   date: string;
   description: string;
   acquirerId: string;
@@ -72,7 +72,7 @@ export interface ReconciliationException {
   resolutionStatus: ResolutionStatus;
   primaryTransaction: TransactionRecord;
   relatedTransactions?: TransactionRecord[];
-  discrepancyAmount?: number; // in centavos
+  discrepancyAmount?: number; // in cents
   createdAt: string;
   resolvedAt?: string;
   resolutionNote?: string;

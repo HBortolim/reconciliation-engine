@@ -9,7 +9,7 @@ namespace ReconciliationEngine.Core.Domain.Services;
 /// </summary>
 public class FeeValidationService : IFeeValidationService
 {
-    public Task<(bool IsValid, Money? DeltaCentavos)> ValidateFeeAsync(
+    public Task<(bool IsValid, Money? DeltaCents)> ValidateFeeAsync(
         TransactionRecord transaction,
         AcquirerContract contract,
         CancellationToken cancellationToken = default)

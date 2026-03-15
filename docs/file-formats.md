@@ -90,7 +90,7 @@ The Reconciliation Engine ingests payment data from multiple Brazilian financial
 1. **Encoding**: Mix of UTF-8, ISO-8859-1, and Windows-1252 across different sources
 2. **Date formats**: DD/MM/YYYY (Brazilian standard), YYYYMMDD (CNAB), ISO 8601 (APIs)
 3. **Decimal separators**: Comma (,) in Brazilian locale vs. dot (.) in APIs
-4. **Amount representation**: Some files use centavos (integer), others use reais (decimal)
+4. **Amount representation**: Some files use cents (integer), others use reais (decimal)
 5. **Line endings**: Mix of CRLF (Windows) and LF (Unix) in bank files
 6. **Empty/malformed records**: Banks sometimes produce files with blank lines or truncated records
 7. **Character encoding in names**: Razão social / nome fantasia with accented characters (ç, ã, é, etc.)

@@ -12,7 +12,7 @@ public class AggregateMatchCandidateSpecification : ISpecification<IEnumerable<T
 
     public AggregateMatchCandidateSpecification(Money? minAmount = null, int minTransactionCount = 2)
     {
-        _minAmount = minAmount ?? Money.FromCentavos(0);
+        _minAmount = minAmount ?? Money.FromCents(0);
         _minTransactionCount = minTransactionCount;
     }
 
@@ -34,10 +34,10 @@ public class AggregateMatchCandidateSpecification : ISpecification<IEnumerable<T
 
         // Aggregate amount must meet minimum
         var totalAmount = transactions.Aggregate(
-            Money.FromCentavos(0),
+            Money.FromCents(0),
             (acc, t) => acc + t.Amount);
 
-        return totalAmount.Centavos >= _minAmount.Centavos;
+        return totalAmount.Cents >= _minAmount.Cents;
     }
 
     public ISpecification<IEnumerable<TransactionRecord>> And(ISpecification<IEnumerable<TransactionRecord>> other)

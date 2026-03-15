@@ -43,8 +43,8 @@ public record FeeRate
         if (amount == null) throw new ArgumentNullException(nameof(amount));
 
         // (amount * basisPoints) / 10000
-        var feeCentavos = (amount.Centavos * BasisPoints) / 10000;
-        return Money.FromCentavos(feeCentavos);
+        var feeCents = (amount.Cents * BasisPoints) / 10000;
+        return Money.FromCents(feeCents);
     }
 
     /// <summary>

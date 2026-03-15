@@ -12,7 +12,7 @@ public interface IFeeValidationService
     /// Validates fee against contract for a transaction.
     /// Returns fee delta if divergence exists.
     /// </summary>
-    Task<(bool IsValid, Money? DeltaCentavos)> ValidateFeeAsync(
+    Task<(bool IsValid, Money? DeltaCents)> ValidateFeeAsync(
         TransactionRecord transaction,
         AcquirerContract contract,
         CancellationToken cancellationToken = default);

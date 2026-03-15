@@ -54,17 +54,17 @@ SELECT
     fs.bandeira,
     fs.produto,
     COUNT(rp.id) AS pair_count,
-    ROUND(AVG(ABS(rp.fee_delta_centavos))::NUMERIC / 100, 2) AS avg_fee_delta_reais,
-    ROUND(MAX(ABS(rp.fee_delta_centavos))::NUMERIC / 100, 2) AS max_fee_delta_reais,
-    ROUND(STDDEV(ABS(rp.fee_delta_centavos))::NUMERIC / 100, 2) AS stddev_fee_delta_reais,
-    ROUND(SUM(ABS(rp.fee_delta_centavos))::NUMERIC / 100, 2) AS total_fee_variance_reais,
-    COUNT(CASE WHEN rp.fee_delta_centavos > 0 THEN 1 END) AS overpayment_count,
-    COUNT(CASE WHEN rp.fee_delta_centavos < 0 THEN 1 END) AS underpayment_count
+    ROUND(AVG(ABS(rp.fee_delta_cents))::NUMERIC / 100, 2) AS avg_fee_delta_reais,
+    ROUND(MAX(ABS(rp.fee_delta_cents))::NUMERIC / 100, 2) AS max_fee_delta_reais,
+    ROUND(STDDEV(ABS(rp.fee_delta_cents))::NUMERIC / 100, 2) AS stddev_fee_delta_reais,
+    ROUND(SUM(ABS(rp.fee_delta_cents))::NUMERIC / 100, 2) AS total_fee_variance_reais,
+    COUNT(CASE WHEN rp.fee_delta_cents > 0 THEN 1 END) AS overpayment_count,
+    COUNT(CASE WHEN rp.fee_delta_cents < 0 THEN 1 END) AS underpayment_count
 FROM reconciliation_pairs rp
 JOIN transaction_records tr ON rp.actual_record_id = tr.id
 JOIN acquirer_contracts ac ON tr.source_type::TEXT = ac.acquirer_id
 JOIN fee_schedules fs ON fs.contract_id = ac.id
-WHERE rp.fee_delta_centavos IS NOT NULL
+WHERE rp.fee_delta_cents IS NOT NULL
 GROUP BY ac.acquirer_id, ac.acquirer_name, fs.bandeira, fs.produto
 ORDER BY total_fee_variance_reais DESC NULLS LAST;
 
@@ -73,10 +73,10 @@ CREATE VIEW v_unreconciled_transactions AS
 SELECT
     tr.id,
     tr.source_type,
-    tr.amount_centavos,
-    ROUND(tr.amount_centavos::NUMERIC / 100, 2) AS amount_reais,
-    tr.fee_centavos,
-    ROUND(tr.fee_centavos::NUMERIC / 100, 2) AS fee_reais,
+    tr.amount_cents,
+    ROUND(tr.amount_cents::NUMERIC / 100, 2) AS amount_reais,
+    tr.fee_cents,
+    ROUND(tr.fee_cents::NUMERIC / 100, 2) AS fee_reais,
     tr.counterparty_document,
     tr.external_id,
     tr.expected_settlement_date,
@@ -139,13 +139,13 @@ CREATE VIEW v_transaction_source_distribution AS
 SELECT
     tr.source_type,
     COUNT(*) AS transaction_count,
-    SUM(tr.amount_centavos) AS total_amount_centavos,
-    ROUND(SUM(tr.amount_centavos)::NUMERIC / 100, 2) AS total_amount_reais,
-    ROUND(AVG(tr.amount_centavos)::NUMERIC / 100, 2) AS avg_amount_reais,
-    SUM(tr.fee_centavos) AS total_fees_centavos,
-    ROUND(SUM(tr.fee_centavos)::NUMERIC / 100, 2) AS total_fees_reais,
+    SUM(tr.amount_cents) AS total_amount_cents,
+    ROUND(SUM(tr.amount_cents)::NUMERIC / 100, 2) AS total_amount_reais,
+    ROUND(AVG(tr.amount_cents)::NUMERIC / 100, 2) AS avg_amount_reais,
+    SUM(tr.fee_cents) AS total_fees_cents,
+    ROUND(SUM(tr.fee_cents)::NUMERIC / 100, 2) AS total_fees_reais,
     MIN(tr.parsed_at) AS first_transaction_date,
     MAX(tr.parsed_at) AS last_transaction_date
 FROM transaction_records tr
 GROUP BY tr.source_type
-ORDER BY total_amount_centavos DESC;
+ORDER BY total_amount_cents DESC;

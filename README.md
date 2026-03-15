@@ -39,7 +39,7 @@ This engine automates that entirely: ingests every settlement file, matches ever
 | File parsing & matching | **Go 1.22** | Goroutine-based parallel file processing; low-overhead concurrency for the CPU-bound subset-sum solver |
 | API & domain logic | **C# / ASP.NET Core 8** | Mature middleware ecosystem (auth, OpenAPI, Hangfire job scheduling); DDD pattern support |
 | Frontend | **React + TypeScript + Tailwind** | Type-safe dashboard with Recharts for fee analysis visualization |
-| Database | **PostgreSQL 16** | ACID compliance for financial data; BIGINT amounts (centavos), JSONB metadata, partitioning |
+| Database | **PostgreSQL 16** | ACID compliance for financial data; BIGINT amounts (cents), JSONB metadata, partitioning |
 | Cache & queue | **Redis 7** | Redis Streams for API→Worker job dispatch; caching for dedup fingerprints and contract lookups |
 | File storage | **MinIO / S3** | Immutable raw file archival with SHA-256 hash for audit trail |
 | Infrastructure | **Docker Compose + Terraform** | Local dev via Compose; AWS (ECS Fargate + RDS + ElastiCache) via Terraform |
@@ -77,7 +77,7 @@ The Go worker consumes file parsing and matching jobs from a Redis Stream. The C
 
 ### Key Design Decisions
 
-**Integer arithmetic for money.** All amounts are stored and computed in centavos as `int64`/`long`. Zero floating-point operations on financial values — a `Money` value object enforces this at the domain boundary. This eliminates the R$0.01 rounding drift that plagues spreadsheet-based reconciliation.
+**Integer arithmetic for money.** All amounts are stored and computed in cents as `int64`/`long`. Zero floating-point operations on financial values — a `Money` value object enforces this at the domain boundary. This eliminates the R$0.01 rounding drift that plagues spreadsheet-based reconciliation.
 
 **Idempotent ingestion.** Re-processing the same file produces zero duplicates. SHA-256 fingerprinting on file content and on individual transaction field tuples enforces this at the database level with a unique constraint.
 

@@ -1,33 +1,33 @@
 namespace ReconciliationEngine.Core.Domain.ValueObjects;
 
 /// <summary>
-/// Immutable value object representing monetary amounts in Brazilian Real (centavos).
-/// Stored internally as long (int64) centavos for precision.
+/// Immutable value object representing monetary amounts in Brazilian Real (cents).
+/// Stored internally as long (int64) cents for precision.
 /// </summary>
 public record Money
 {
-    private const long MinCentavos = 0;
-    private const long MaxCentavos = long.MaxValue;
+    private const long MinCents = 0;
+    private const long MaxCents = long.MaxValue;
 
-    public long Centavos { get; }
+    public long Cents { get; }
 
-    private Money(long centavos)
+    private Money(long cents)
     {
-        if (centavos < MinCentavos)
-            throw new ArgumentException("Money cannot be negative.", nameof(centavos));
+        if (cents < MinCents)
+            throw new ArgumentException("Money cannot be negative.", nameof(cents));
         
-        if (centavos > MaxCentavos)
-            throw new ArgumentException("Money value exceeds maximum allowed.", nameof(centavos));
+        if (cents > MaxCents)
+            throw new ArgumentException("Money value exceeds maximum allowed.", nameof(cents));
 
-        Centavos = centavos;
+        Cents = cents;
     }
 
     /// <summary>
-    /// Creates a Money instance from centavos.
+    /// Creates a Money instance from cents.
     /// </summary>
-    /// <param name="centavos">Amount in centavos (cents)</param>
+    /// <param name="cents">Amount in cents (cents)</param>
     /// <returns>Money instance</returns>
-    public static Money FromCentavos(long centavos) => new(centavos);
+    public static Money FromCents(long cents) => new(cents);
 
     /// <summary>
     /// Creates a Money instance from Brazilian Real (Reais).
@@ -39,8 +39,8 @@ public record Money
         if (reais < 0)
             throw new ArgumentException("Money cannot be negative.", nameof(reais));
 
-        var centavos = (long)(reais * 100);
-        return new Money(centavos);
+        var cents = (long)(reais * 100);
+        return new Money(cents);
     }
 
     /// <summary>
@@ -51,7 +51,7 @@ public record Money
         if (left == null) throw new ArgumentNullException(nameof(left));
         if (right == null) throw new ArgumentNullException(nameof(right));
         
-        return new Money(left.Centavos + right.Centavos);
+        return new Money(left.Cents + right.Cents);
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public record Money
         if (left == null) throw new ArgumentNullException(nameof(left));
         if (right == null) throw new ArgumentNullException(nameof(right));
         
-        var result = left.Centavos - right.Centavos;
+        var result = left.Cents - right.Cents;
         if (result < 0)
             throw new InvalidOperationException("Subtraction would result in negative money.");
         
@@ -72,10 +72,10 @@ public record Money
     /// <summary>
     /// Gets the Money as decimal Reais.
     /// </summary>
-    public decimal ToReais() => Centavos / 100m;
+    public decimal ToReais() => Cents / 100m;
 
     public override string ToString() => $"R$ {ToReais():F2}";
 
-    public bool Equals(Money? other) => other != null && Centavos == other.Centavos;
-    public override int GetHashCode() => Centavos.GetHashCode();
+    public bool Equals(Money? other) => other != null && Cents == other.Cents;
+    public override int GetHashCode() => Cents.GetHashCode();
 }

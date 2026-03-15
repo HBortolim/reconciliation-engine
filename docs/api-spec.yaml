@@ -511,13 +511,13 @@ components:
           format: uuid
         sourceType:
           $ref: '#/components/schemas/SourceType'
-        amountCentavos:
+        amountCents:
           type: integer
           format: int64
-        feeCentavos:
+        feeCents:
           type: integer
           format: int64
-        netAmountCentavos:
+        netAmountCents:
           type: integer
           format: int64
         expectedSettlementDate:
@@ -558,12 +558,12 @@ components:
           format: double
           minimum: 0
           maximum: 1
-        amountDeltaCentavos:
+        amountDeltaCents:
           type: integer
           format: int64
         dateDeltaDays:
           type: integer
-        feeDeltaCentavos:
+        feeDeltaCents:
           type: integer
           format: int64
 
@@ -697,13 +697,13 @@ components:
               format: date
         totalTransactions:
           type: integer
-        totalExpectedFeeCentavos:
+        totalExpectedFeeCents:
           type: integer
           format: int64
-        totalActualFeeCentavos:
+        totalActualFeeCents:
           type: integer
           format: int64
-        totalOverpaymentCentavos:
+        totalOverpaymentCents:
           type: integer
           format: int64
         byAcquirer:
@@ -717,13 +717,13 @@ components:
                 type: string
               transactionCount:
                 type: integer
-              expectedFeeCentavos:
+              expectedFeeCents:
                 type: integer
                 format: int64
-              actualFeeCentavos:
+              actualFeeCents:
                 type: integer
                 format: int64
-              overpaymentCentavos:
+              overpaymentCents:
                 type: integer
                 format: int64
               divergenceCount:
@@ -744,10 +744,10 @@ components:
         reconciliationRate:
           type: number
           format: double
-        totalAmountCentavos:
+        totalAmountCents:
           type: integer
           format: int64
-        matchedAmountCentavos:
+        matchedAmountCents:
           type: integer
           format: int64
         processingDurationMs:
@@ -761,7 +761,7 @@ components:
           format: date-time
         totalUnreconciled:
           type: integer
-        totalAmountCentavos:
+        totalAmountCents:
           type: integer
           format: int64
         buckets:
@@ -774,7 +774,7 @@ components:
                 description: e.g., "0-7 days", "8-15 days", "16-30 days", "30+ days"
               count:
                 type: integer
-              amountCentavos:
+              amountCents:
                 type: integer
                 format: int64
               percentage:

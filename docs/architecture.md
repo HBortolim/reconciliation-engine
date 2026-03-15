@@ -80,7 +80,7 @@ Bank/Acquirer Files (OFX, CNAB, CSV, JSON)
 
 ### Key Design Decisions
 
-- **Integer arithmetic for money** — All amounts in centavos (int64). Zero floating-point on financial values.
+- **Integer arithmetic for money** — All amounts in cents (int64). Zero floating-point on financial values.
 - **Batch processing** — Daily reconciliation runs, not real-time streaming.
 - **No microservices** — Modular monolith is right-sized for single-tenant SMB use case.
 - **Polyglot by purpose** — Go for I/O-bound parsing and CPU-bound matching; C# for API and business rules.
