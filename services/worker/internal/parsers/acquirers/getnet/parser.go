@@ -56,17 +56,17 @@ func (p *Parser) parsePositionalRecord(line string, filename string) *common.Tra
 
 	// Extract fields based on Getnet positional format (positions vary by bank)
 	// These are placeholder positions
-	nsu := strings.TrimSpace(line[0:12])           // NSU (12 chars)
-	amountStr := strings.TrimSpace(line[12:30])    // Amount (18 chars)
-	dateStr := strings.TrimSpace(line[30:38])      // Date (8 chars, DDMMYYYY)
+	nsu := strings.TrimSpace(line[0:12])              // NSU (12 chars)
+	amountStr := strings.TrimSpace(line[12:30])       // Amount (18 chars)
+	dateStr := strings.TrimSpace(line[30:38])         // Date (8 chars, DDMMYYYY)
 	counterpartyDoc := strings.TrimSpace(line[38:52]) // CNPJ/CPF (14 chars)
 
 	if nsu == "" {
 		return nil
 	}
 
-	var amountCentavos int64
-	fmt.Sscanf(amountStr, "%d", &amountCentavos)
+	var amountCents int64
+	fmt.Sscanf(amountStr, "%d", &amountCents)
 
 	transDate := parseDate(dateStr, "02012006") // DDMMYYYY format
 	if transDate.IsZero() {
@@ -79,8 +79,8 @@ func (p *Parser) parsePositionalRecord(line string, filename string) *common.Tra
 		NSU:                    nsu,
 		ExternalID:             nsu,
 		CounterpartyDocument:   counterpartyDoc,
-		AmountCentavos:         amountCentavos,
-		NetAmountCentavos:      amountCentavos,
+		AmountCents:            amountCents,
+		NetAmountCents:         amountCents,
 		TransactionDate:        transDate,
 		ExpectedSettlementDate: transDate.AddDate(0, 0, 1),
 		SourceFile:             filename,

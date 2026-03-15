@@ -51,19 +51,19 @@ const FeeAnalysis: React.FC = () => {
               <div>
                 <p className="text-gray-500 text-sm">Contracted Fees</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">
-                  <MoneyDisplay centavos={0} />
+                  <MoneyDisplay cents={0} />
                 </p>
               </div>
               <div>
                 <p className="text-gray-500 text-sm">Actual Fees</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">
-                  <MoneyDisplay centavos={0} />
+                  <MoneyDisplay cents={0} />
                 </p>
               </div>
               <div>
                 <p className="text-gray-500 text-sm">Variance</p>
                 <p className="text-2xl font-bold text-red-600 mt-1">
-                  <MoneyDisplay centavos={0} />
+                  <MoneyDisplay cents={0} />
                 </p>
               </div>
             </div>
@@ -90,9 +90,9 @@ const FeeAnalysis: React.FC = () => {
                   <tr className="hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">Sample Acquirer 1</td>
                     <td className="px-6 py-4 text-sm text-gray-600">Visa</td>
-                    <td className="px-6 py-4 text-sm font-mono"><MoneyDisplay centavos={0} /></td>
-                    <td className="px-6 py-4 text-sm font-mono"><MoneyDisplay centavos={0} /></td>
-                    <td className="px-6 py-4 text-sm font-mono text-red-600"><MoneyDisplay centavos={0} /></td>
+                    <td className="px-6 py-4 text-sm font-mono"><MoneyDisplay cents={0} /></td>
+                    <td className="px-6 py-4 text-sm font-mono"><MoneyDisplay cents={0} /></td>
+                    <td className="px-6 py-4 text-sm font-mono text-red-600"><MoneyDisplay cents={0} /></td>
                   </tr>
                 </tbody>
               </table>

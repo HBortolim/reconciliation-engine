@@ -75,7 +75,7 @@ const RunDetail: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-gray-500 text-sm font-medium">Total Amount</h3>
           <p className="text-lg font-mono font-bold text-gray-900 mt-2">
-            <MoneyDisplay centavos={run.statistics.totalAmount} />
+            <MoneyDisplay cents={run.statistics.totalAmount} />
           </p>
         </div>
       </div>
@@ -105,7 +105,7 @@ const RunDetail: React.FC = () => {
                     <ConfidenceBar confidence={pair.confidence} />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 font-mono">
-                    <MoneyDisplay centavos={pair.transactionA.amount} />
+                    <MoneyDisplay cents={pair.transactionA.amount} />
                   </td>
                 </tr>
               ))}

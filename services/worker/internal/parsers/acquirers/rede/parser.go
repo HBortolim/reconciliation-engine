@@ -67,8 +67,8 @@ func (p *Parser) parseCSVRow(row []string, columnMap map[string]int, filename st
 		return nil // No NSU means invalid transaction
 	}
 
-	var amountCentavos int64
-	fmt.Sscanf(amountStr, "%d", &amountCentavos)
+	var amountCents int64
+	fmt.Sscanf(amountStr, "%d", &amountCents)
 
 	transDate := parseDate(dateStr)
 	if transDate.IsZero() {
@@ -81,8 +81,8 @@ func (p *Parser) parseCSVRow(row []string, columnMap map[string]int, filename st
 		NSU:                    nsu,
 		ExternalID:             nsu,
 		CounterpartyDocument:   counterpartyDoc,
-		AmountCentavos:         amountCentavos,
-		NetAmountCentavos:      amountCentavos,
+		AmountCents:            amountCents,
+		NetAmountCents:         amountCents,
 		TransactionDate:        transDate,
 		ExpectedSettlementDate: transDate.AddDate(0, 0, 1),
 		SourceFile:             filename,

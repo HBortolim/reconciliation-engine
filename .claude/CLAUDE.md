@@ -69,7 +69,7 @@ docs/               → Architecture, file formats, OpenAPI spec
 
 ### Non-Negotiable Constraints
 
-- **Integer arithmetic for money.** All monetary values in centavos (`int64`/`long`). Zero floating-point operations on financial data. Use the `Money` value object in C# and `CentavosFromReais()`/`int64` in Go.
+- **Integer arithmetic for money.** All monetary values in cents (`int64`/`long`). Zero floating-point operations on financial data. Use the `Money` value object in C# and `CentsFromReais()`/`int64` in Go.
 - **Idempotent ingestion.** SHA-256 fingerprinting on file content + transaction-level hashing. Re-ingesting the same file must produce zero duplicates.
 - **TDD is mandatory.** Every line of domain logic is written test-first. Red → Green → Refactor. No exceptions.
 - **Structured JSON logging.** Serilog for C#, zerolog for Go. Correlation IDs across the pipeline.
@@ -103,12 +103,12 @@ docs/               → Architecture, file formats, OpenAPI spec
 - Vite + React + TypeScript strict mode.
 - Tailwind CSS for styling.
 - Vitest for testing.
-- All monetary values displayed via `MoneyDisplay` component (centavos → formatted BRL).
+- All monetary values displayed via `MoneyDisplay` component (cents → formatted BRL).
 
 ### Database
 
 - PostgreSQL 16. Schema in `migrations/`.
-- All amounts: `BIGINT` (centavos), never `DECIMAL` or `FLOAT`.
+- All amounts: `BIGINT` (cents), never `DECIMAL` or `FLOAT`.
 - UUIDs for primary keys (`uuid_generate_v4()`).
 - Domain events: transactional outbox table (`domain_events_outbox`).
 
@@ -122,7 +122,7 @@ When implementing parsers or matching logic, keep in mind:
 - **Card acquirer settlement windows vary.** CIELO: D+1 débito, D+30 crédito. Stone may differ. Always check `AcquirerContract` for the merchant's specific terms.
 - **Pix E2EID format:** `E{ISPB_8chars}{YYYYMMDD}{SEQUENCE_11chars}` — validate this.
 - **Encoding chaos:** Bank files mix UTF-8, ISO-8859-1, Windows-1252. Always handle encoding detection.
-- **Amounts:** Some files use centavos (integer), others reais (decimal with comma separator). Normalize to centavos immediately on parse.
+- **Amounts:** Some files use cents (integer), others reais (decimal with comma separator). Normalize to cents immediately on parse.
 
 ---
 

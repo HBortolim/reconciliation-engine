@@ -78,7 +78,7 @@ func (m *Matcher) exactMatch(expected, actual *common.TransactionRecord) bool {
 	default:
 		// Fallback: match by external ID and amount
 		return expected.ExternalID == actual.ExternalID &&
-			expected.AmountCentavos == actual.AmountCentavos &&
+			expected.AmountCents == actual.AmountCents &&
 			m.datesAreClose(expected.TransactionDate, actual.TransactionDate)
 	}
 }

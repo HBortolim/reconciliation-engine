@@ -77,8 +77,8 @@ func (p *Parser) parseCSVRow(row []string, columnMap map[string]int, filename st
 		return nil
 	}
 
-	var amountCentavos int64
-	fmt.Sscanf(amountStr, "%d", &amountCentavos)
+	var amountCents int64
+	fmt.Sscanf(amountStr, "%d", &amountCents)
 
 	transDate := parseDate(dateStr)
 	if transDate.IsZero() {
@@ -90,8 +90,8 @@ func (p *Parser) parseCSVRow(row []string, columnMap map[string]int, filename st
 		SourceType:             common.SourceTypeCardCredit,
 		ExternalID:             externalID,
 		CounterpartyDocument:   counterpartyDoc,
-		AmountCentavos:         amountCentavos,
-		NetAmountCentavos:      amountCentavos,
+		AmountCents:            amountCents,
+		NetAmountCents:         amountCents,
 		TransactionDate:        transDate,
 		ExpectedSettlementDate: transDate.AddDate(0, 0, 1),
 		SourceFile:             filename,
@@ -131,17 +131,17 @@ func (p *Parser) parseFixedRecord(line string, filename string) *common.Transact
 		return nil
 	}
 
-	externalID := strings.TrimSpace(line[0:20])    // ID (20 chars)
-	amountStr := strings.TrimSpace(line[20:38])    // Amount (18 chars)
-	dateStr := strings.TrimSpace(line[38:46])      // Date (8 chars)
+	externalID := strings.TrimSpace(line[0:20])       // ID (20 chars)
+	amountStr := strings.TrimSpace(line[20:38])       // Amount (18 chars)
+	dateStr := strings.TrimSpace(line[38:46])         // Date (8 chars)
 	counterpartyDoc := strings.TrimSpace(line[46:60]) // Document (14 chars)
 
 	if externalID == "" {
 		return nil
 	}
 
-	var amountCentavos int64
-	fmt.Sscanf(amountStr, "%d", &amountCentavos)
+	var amountCents int64
+	fmt.Sscanf(amountStr, "%d", &amountCents)
 
 	transDate := parseDate(dateStr)
 	if transDate.IsZero() {
@@ -153,8 +153,8 @@ func (p *Parser) parseFixedRecord(line string, filename string) *common.Transact
 		SourceType:             common.SourceTypeCardCredit,
 		ExternalID:             externalID,
 		CounterpartyDocument:   counterpartyDoc,
-		AmountCentavos:         amountCentavos,
-		NetAmountCentavos:      amountCentavos,
+		AmountCents:            amountCents,
+		NetAmountCents:         amountCents,
 		TransactionDate:        transDate,
 		ExpectedSettlementDate: transDate.AddDate(0, 0, 1),
 		SourceFile:             filename,

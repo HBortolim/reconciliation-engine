@@ -28,7 +28,7 @@ The system operates as a multi-stage pipeline with clear separation of concerns:
 
 Raw files from heterogeneous sources are parsed into a unified internal transaction model. This is the hardest part of the system because Brazilian payment file formats are notoriously inconsistent. CNAB 240 and CNAB 400 (the Febraban standards for bank remittance/return files) have bank-specific variations that break parsers. OFX files from different banks embed metadata differently. Card acquirer APIs each return settlement data in proprietary schemas.
 
-The normalizer produces a canonical `TransactionRecord` with fields like: source identifier, amount (in centavos, always integer arithmetic to avoid floating-point), timestamp (UTC-normalized from BRT), counterparty identifiers (CNPJ/CPF, Pix key, NSU for card transactions), fee breakdown, expected settlement date, and a hash fingerprint for deduplication.
+The normalizer produces a canonical `TransactionRecord` with fields like: source identifier, amount (in cents, always integer arithmetic to avoid floating-point), timestamp (UTC-normalized from BRT), counterparty identifiers (CNPJ/CPF, Pix key, NSU for card transactions), fee breakdown, expected settlement date, and a hash fingerprint for deduplication.
 
 **Stage 2 — Matching Engine**
 
@@ -52,7 +52,7 @@ Reconciliation results are persisted and exposed through both an API and generat
 
 The internal data model is designed around the realities of Brazilian payments:
 
-- **TransactionRecord**: The canonical normalized record. Every ingested transaction becomes one of these regardless of source. Key fields include `source_type` (enum: PIX, BOLETO, CARD_CREDIT, CARD_DEBIT, TED, DOC, DEBITO_AUTOMATICO), `amount_centavos` (i64, always positive), `fee_centavos` (i64), `net_amount_centavos` (i64), `expected_settlement_date`, `actual_settlement_date`, `counterparty_document` (CPF/CNPJ), `external_id` (source-specific unique key), and `fingerprint_hash` (SHA-256 of key fields for dedup).
+- **TransactionRecord**: The canonical normalized record. Every ingested transaction becomes one of these regardless of source. Key fields include `source_type` (enum: PIX, BOLETO, CARD_CREDIT, CARD_DEBIT, TED, DOC, DEBITO_AUTOMATICO), `amount_cents` (i64, always positive), `fee_cents` (i64), `net_amount_cents` (i64), `expected_settlement_date`, `actual_settlement_date`, `counterparty_document` (CPF/CNPJ), `external_id` (source-specific unique key), and `fingerprint_hash` (SHA-256 of key fields for dedup).
 
 - **ReconciliationPair**: Links two TransactionRecords (expected vs. actual) with a `match_type` (EXACT, FUZZY, AGGREGATE), `confidence_score` (0.0–1.0), and `discrepancy_details` (optional struct with amount delta, date delta, fee delta).
 
@@ -131,7 +131,7 @@ The engine maintains a calendar module that understands Brazilian banking holida
 - **Multi-source ingestion**: Parse and normalize OFX, CNAB 240/400, Pix reports, card acquirer files (CIELO, Rede, Stone, PagSeguro, Getnet, SafraPay), and generic CSV/Excel inputs.
 - **Three-pass matching**: Exact key match → fuzzy scored match → aggregate subset-sum match. Configurable confidence thresholds per match type.
 - **Bank-specific CNAB profiles**: Configuration-driven parser variations for Itaú, Bradesco, Banco do Brasil, Santander, Caixa, BTG Pactual, Banco Inter, Nubank, Sicredi, and Sicoob.
-- **Integer arithmetic throughout**: All monetary calculations in centavos (i64). Zero floating-point operations on financial values. This prevents the classic R$0.01 rounding drift that plagues spreadsheet-based reconciliation.
+- **Integer arithmetic throughout**: All monetary calculations in cents (i64). Zero floating-point operations on financial values. This prevents the classic R$0.01 rounding drift that plagues spreadsheet-based reconciliation.
 - **Idempotent processing**: Re-ingesting the same file produces no duplicates. SHA-256 fingerprinting on file content + individual transaction hashing.
 
 ### Fee Intelligence
@@ -338,7 +338,7 @@ Integration tests with realistic data volumes. Performance optimization (particu
 
 ## Key Technical Decisions & Rationale
 
-**Why integer arithmetic for money?** Floating-point representation of decimal values is fundamentally broken for financial calculations. R$19.99 cannot be exactly represented in IEEE 754. Over thousands of transactions, rounding errors accumulate into real discrepancies. Using centavos as i64 eliminates this entirely. Every amount in the system is stored and computed as an integer number of centavos.
+**Why integer arithmetic for money?** Floating-point representation of decimal values is fundamentally broken for financial calculations. R$19.99 cannot be exactly represented in IEEE 754. Over thousands of transactions, rounding errors accumulate into real discrepancies. Using cents as i64 eliminates this entirely. Every amount in the system is stored and computed as an integer number of cents.
 
 **Why Go for parsers and matching, C# for API?** Parsers are I/O-bound and benefit from Go's goroutine model for parallel file processing. The matching engine is CPU-bound and benefits from Go's low-overhead concurrency. The API layer, on the other hand, benefits from ASP.NET Core's mature middleware ecosystem (auth, validation, OpenAPI generation, Hangfire integration). This is also a deliberate portfolio choice: demonstrating comfort across both ecosystems.
 
@@ -380,7 +380,7 @@ Reporting is a **Conformist** to all other contexts — it consumes their data w
 
 Value Objects are the backbone of the domain model. They enforce invariants at construction time and are immutable:
 
-- `Money`: Wraps an `int64` representing centavos. Constructed via factory methods like `Money.FromCentavos(1999)` or `Money.FromReais(19.99m)` (the latter converts internally and is only used at system boundaries). Supports arithmetic operations that return new `Money` instances. Prevents negative amounts where domain rules require it. This is the single most important Value Object — it eliminates an entire class of bugs.
+- `Money`: Wraps an `int64` representing cents. Constructed via factory methods like `Money.FromCents(1999)` or `Money.FromReais(19.99m)` (the latter converts internally and is only used at system boundaries). Supports arithmetic operations that return new `Money` instances. Prevents negative amounts where domain rules require it. This is the single most important Value Object — it eliminates an entire class of bugs.
 
 - `Cnpj` / `Cpf`: Self-validating document number types. Constructed from string input, validates the check digits (módulo 11 for both), and stores the raw 14/11-digit number without punctuation. Exposes formatted output (`XX.XXX.XXX/XXXX-XX`) as a presentation concern only.
 
@@ -478,7 +478,7 @@ Every line of domain logic in this project is written test-first. TDD is not opt
 
 The strict Red-Green-Refactor cycle applies:
 
-1. **Red**: Write a failing test that describes the next increment of behavior. The test name should read like a specification: `MatchingService_ExactMatch_ByNSU_ReturnsHighConfidencePair`, `Money_FromReais_ConvertsCorrectlyToCentavos`, `Exception_Resolve_WithoutNote_ThrowsInvariantViolation`.
+1. **Red**: Write a failing test that describes the next increment of behavior. The test name should read like a specification: `MatchingService_ExactMatch_ByNSU_ReturnsHighConfidencePair`, `Money_FromReais_ConvertsCorrectlyToCents`, `Exception_Resolve_WithoutNote_ThrowsInvariantViolation`.
 
 2. **Green**: Write the minimum code to make the test pass. No more.
 
@@ -491,7 +491,7 @@ The strict Red-Green-Refactor cycle applies:
 Every Value Object has exhaustive unit tests covering: valid construction, invalid construction (rejected inputs), equality semantics, and arithmetic/behavior. These tests are fast, isolated, and form the foundation of the test suite.
 
 Examples:
-- `Money`: Construction from centavos and reais, addition, subtraction, comparison, zero handling, negative rejection where applicable.
+- `Money`: Construction from cents and reais, addition, subtraction, comparison, zero handling, negative rejection where applicable.
 - `Cnpj`: Valid CNPJ passes, invalid check digits rejected, formatted vs. raw output, equality between formatted and unformatted input.
 - `SettlementDate`: Construction on a business day succeeds, construction on a weekend or feriado is rejected (or auto-adjusted, depending on design choice), `AddBusinessDays` correctly skips holidays.
 

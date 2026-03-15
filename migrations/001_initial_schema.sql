@@ -14,9 +14,9 @@ CREATE TYPE resolution_status AS ENUM ('OPEN', 'IN_REVIEW', 'RESOLVED', 'IGNORED
 CREATE TABLE transaction_records (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     source_type source_type NOT NULL,
-    amount_centavos BIGINT NOT NULL CHECK (amount_centavos >= 0),
-    fee_centavos BIGINT NOT NULL DEFAULT 0,
-    net_amount_centavos BIGINT NOT NULL,
+    amount_cents BIGINT NOT NULL CHECK (amount_cents >= 0),
+    fee_cents BIGINT NOT NULL DEFAULT 0,
+    net_amount_cents BIGINT NOT NULL,
     expected_settlement_date DATE,
     actual_settlement_date DATE,
     counterparty_document VARCHAR(14),
@@ -35,7 +35,7 @@ CREATE INDEX idx_tr_external_id ON transaction_records(external_id);
 CREATE INDEX idx_tr_counterparty ON transaction_records(counterparty_document);
 CREATE INDEX idx_tr_expected_settlement ON transaction_records(expected_settlement_date);
 CREATE INDEX idx_tr_actual_settlement ON transaction_records(actual_settlement_date);
-CREATE INDEX idx_tr_amount ON transaction_records(amount_centavos);
+CREATE INDEX idx_tr_amount ON transaction_records(amount_cents);
 CREATE INDEX idx_tr_parsed_at ON transaction_records(parsed_at);
 
 -- Reconciliation Runs table
@@ -65,9 +65,9 @@ CREATE TABLE reconciliation_pairs (
     actual_record_id UUID NOT NULL REFERENCES transaction_records(id),
     match_type match_type NOT NULL,
     confidence_score DOUBLE PRECISION NOT NULL CHECK (confidence_score >= 0 AND confidence_score <= 1),
-    amount_delta_centavos BIGINT DEFAULT 0,
+    amount_delta_cents BIGINT DEFAULT 0,
     date_delta_days INTEGER DEFAULT 0,
-    fee_delta_centavos BIGINT DEFAULT 0,
+    fee_delta_cents BIGINT DEFAULT 0,
     matched_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

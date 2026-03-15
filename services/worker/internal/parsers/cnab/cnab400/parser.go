@@ -61,14 +61,14 @@ func (p *Parser) parseDetailRecord(line string, filename string) *common.Transac
 	}
 
 	// Field positions for CNAB 400 (1-indexed in docs, 0-indexed in code)
-	externalID := strings.TrimSpace(line[53:73])   // Número de inscrição (20 chars)
-	amountStr := strings.TrimSpace(line[82:100])   // Valor (18 chars)
-	dateStr := strings.TrimSpace(line[108:116])    // Data lançamento (8 chars, DDMMYYYY)
+	externalID := strings.TrimSpace(line[53:73])        // Número de inscrição (20 chars)
+	amountStr := strings.TrimSpace(line[82:100])        // Valor (18 chars)
+	dateStr := strings.TrimSpace(line[108:116])         // Data lançamento (8 chars, DDMMYYYY)
 	counterpartyDoc := strings.TrimSpace(line[104:118]) // CPF/CNPJ
 
-	var amountCentavos int64
+	var amountCents int64
 	if len(amountStr) > 0 {
-		fmt.Sscanf(amountStr, "%d", &amountCentavos)
+		fmt.Sscanf(amountStr, "%d", &amountCents)
 	}
 
 	transDate := parseDate(dateStr, "02012006") // DDMMYYYY format
@@ -81,8 +81,8 @@ func (p *Parser) parseDetailRecord(line string, filename string) *common.Transac
 		SourceType:             common.SourceTypeDOC,
 		ExternalID:             externalID,
 		CounterpartyDocument:   counterpartyDoc,
-		AmountCentavos:         amountCentavos,
-		NetAmountCentavos:      amountCentavos,
+		AmountCents:            amountCents,
+		NetAmountCents:         amountCents,
 		TransactionDate:        transDate,
 		ExpectedSettlementDate: transDate.AddDate(0, 0, 1),
 		SourceFile:             filename,

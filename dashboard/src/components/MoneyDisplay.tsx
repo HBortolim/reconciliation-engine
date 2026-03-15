@@ -1,17 +1,17 @@
 import React from "react";
 
 interface MoneyDisplayProps {
-  centavos: number;
+  cents: number;
   symbol?: string;
   showCents?: boolean;
 }
 
 const MoneyDisplay: React.FC<MoneyDisplayProps> = ({
-  centavos,
+  cents,
   symbol = "R$",
   showCents = true
 }) => {
-  const reais = centavos / 100;
+  const reais = cents / 100;
   const formatted = reais.toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",

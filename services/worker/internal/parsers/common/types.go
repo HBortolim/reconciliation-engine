@@ -22,20 +22,20 @@ const (
 // TransactionRecord represents a unified transaction record across all formats.
 type TransactionRecord struct {
 	// Core identification
-	ID                      string           `json:"id"`
-	SourceType              SourceType       `json:"source_type"`
-	ExternalID              string           `json:"external_id"`
-	NSU                     string           `json:"nsu,omitempty"`
-	E2EID                   string           `json:"e2e_id,omitempty"`
-	NossoNumero             string           `json:"nosso_numero,omitempty"`
-	CounterpartyDocument    string           `json:"counterparty_document"`
-	CounterpartyName        string           `json:"counterparty_name,omitempty"`
+	ID                   string     `json:"id"`
+	SourceType           SourceType `json:"source_type"`
+	ExternalID           string     `json:"external_id"`
+	NSU                  string     `json:"nsu,omitempty"`
+	E2EID                string     `json:"e2e_id,omitempty"`
+	NossoNumero          string     `json:"nosso_numero,omitempty"`
+	CounterpartyDocument string     `json:"counterparty_document"`
+	CounterpartyName     string     `json:"counterparty_name,omitempty"`
 
-	// Financial amounts (in centavos)
-	AmountCentavos       int64   `json:"amount_centavos"`
-	FeeCentavos          int64   `json:"fee_centavos,omitempty"`
-	NetAmountCentavos    int64   `json:"net_amount_centavos"`
-	DiscountCentavos     int64   `json:"discount_centavos,omitempty"`
+	// Financial amounts (in cents)
+	AmountCents    int64 `json:"amount_cents"`
+	FeeCents       int64 `json:"fee_cents,omitempty"`
+	NetAmountCents int64 `json:"net_amount_cents"`
+	DiscountCents  int64 `json:"discount_cents,omitempty"`
 
 	// Dates
 	ExpectedSettlementDate time.Time  `json:"expected_settlement_date"`

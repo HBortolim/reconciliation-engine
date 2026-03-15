@@ -8,10 +8,10 @@ import (
 
 // ComputeFingerprint generates a SHA-256 hash fingerprint based on key transaction fields.
 // The fingerprint is computed from: source_type + amount + transaction_date + external_id + counterparty_document.
-func ComputeFingerprint(sourceType SourceType, amountCentavos int64, transactionDate time.Time, externalID, counterpartyDocument string) string {
+func ComputeFingerprint(sourceType SourceType, amountCents int64, transactionDate time.Time, externalID, counterpartyDocument string) string {
 	data := fmt.Sprintf("%s|%d|%s|%s|%s",
 		sourceType,
-		amountCentavos,
+		amountCents,
 		transactionDate.Format(time.RFC3339),
 		externalID,
 		counterpartyDocument,
@@ -25,7 +25,7 @@ func ComputeFingerprint(sourceType SourceType, amountCentavos int64, transaction
 func ValidateFingerprint(record *TransactionRecord) bool {
 	computed := ComputeFingerprint(
 		record.SourceType,
-		record.AmountCentavos,
+		record.AmountCents,
 		record.TransactionDate,
 		record.ExternalID,
 		record.CounterpartyDocument,
