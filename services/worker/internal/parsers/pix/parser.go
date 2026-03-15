@@ -97,8 +97,8 @@ func (p *Parser) parseCSVRow(row []string, columnMap map[string]int, filename st
 		return nil // Invalid E2EID
 	}
 
-	var amountCentavos int64
-	fmt.Sscanf(amountStr, "%d", &amountCentavos)
+	var amountCents int64
+	fmt.Sscanf(amountStr, "%d", &amountCents)
 
 	transDate := parseDate(dateStr)
 	if transDate.IsZero() {
@@ -111,8 +111,8 @@ func (p *Parser) parseCSVRow(row []string, columnMap map[string]int, filename st
 		E2EID:                  e2eID,
 		ExternalID:             e2eID,
 		CounterpartyDocument:   counterpartyDoc,
-		AmountCentavos:         amountCentavos,
-		NetAmountCentavos:      amountCentavos,
+		AmountCents:            amountCents,
+		NetAmountCents:         amountCents,
 		TransactionDate:        transDate,
 		ExpectedSettlementDate: transDate,
 		SourceFile:             filename,

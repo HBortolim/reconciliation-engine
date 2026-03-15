@@ -67,8 +67,8 @@ func (p *Parser) parseCSVRow(row []string, columnMap map[string]int, filename st
 		return nil // No reference ID means invalid transaction
 	}
 
-	var amountCentavos int64
-	fmt.Sscanf(amountStr, "%d", &amountCentavos)
+	var amountCents int64
+	fmt.Sscanf(amountStr, "%d", &amountCents)
 
 	transDate := parseDate(dateStr)
 	if transDate.IsZero() {
@@ -80,8 +80,8 @@ func (p *Parser) parseCSVRow(row []string, columnMap map[string]int, filename st
 		SourceType:             common.SourceTypeCardCredit,
 		ExternalID:             referenceID,
 		CounterpartyDocument:   buyerDoc,
-		AmountCentavos:         amountCentavos,
-		NetAmountCentavos:      amountCentavos,
+		AmountCents:            amountCents,
+		NetAmountCents:         amountCents,
 		TransactionDate:        transDate,
 		ExpectedSettlementDate: transDate.AddDate(0, 0, 1),
 		SourceFile:             filename,

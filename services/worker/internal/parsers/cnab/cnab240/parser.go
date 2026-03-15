@@ -62,16 +62,16 @@ func (p *Parser) parseDetailRecord(line string, filename string) *common.Transac
 
 	// Field positions are bank-specific; using defaults for illustration
 	// These would be overridden based on BankProfile settings
-	
+
 	// Extract key fields based on fixed positions
 	// Positions are 1-indexed in CNAB documentation, but 0-indexed in code
-	externalID := strings.TrimSpace(line[32:48])   // Nos. Sequencial do Registro (16 chars)
-	amountStr := strings.TrimSpace(line[82:100])   // Valor (18 chars, rightmost 2 are decimals)
-	dateStr := strings.TrimSpace(line[105:113])    // Data do Lançamento (8 chars, DDMMYYYY)
+	externalID := strings.TrimSpace(line[32:48]) // Nos. Sequencial do Registro (16 chars)
+	amountStr := strings.TrimSpace(line[82:100]) // Valor (18 chars, rightmost 2 are decimals)
+	dateStr := strings.TrimSpace(line[105:113])  // Data do Lançamento (8 chars, DDMMYYYY)
 
-	var amountCentavos int64
+	var amountCents int64
 	if len(amountStr) > 0 {
-		fmt.Sscanf(amountStr, "%d", &amountCentavos)
+		fmt.Sscanf(amountStr, "%d", &amountCents)
 	}
 
 	transDate := parseDate(dateStr, "02012006") // DDMMYYYY format
@@ -84,8 +84,8 @@ func (p *Parser) parseDetailRecord(line string, filename string) *common.Transac
 		SourceType:             common.SourceTypeTED, // Would be determined from segment type
 		ExternalID:             externalID,
 		CounterpartyDocument:   strings.TrimSpace(line[54:68]), // CPF/CNPJ field
-		AmountCentavos:         amountCentavos,
-		NetAmountCentavos:      amountCentavos,
+		AmountCents:            amountCents,
+		NetAmountCents:         amountCents,
 		TransactionDate:        transDate,
 		ExpectedSettlementDate: transDate.AddDate(0, 0, 1),
 		SourceFile:             filename,

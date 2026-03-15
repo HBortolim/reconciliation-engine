@@ -9,15 +9,15 @@ import (
 
 // MatcherConfig contains configuration for aggregate matching.
 type MatcherConfig struct {
-	AmountToleranceCentavos int64
-	MaxSubsetSize           int // Maximum number of transactions to group (default 50)
+	AmountToleranceCents int64
+	MaxSubsetSize        int // Maximum number of transactions to group (default 50)
 }
 
 // DefaultConfig returns default aggregate matcher configuration.
 func DefaultConfig() *MatcherConfig {
 	return &MatcherConfig{
-		AmountToleranceCentavos: 100,
-		MaxSubsetSize:           50,
+		AmountToleranceCents: 100,
+		MaxSubsetSize:        50,
 	}
 }
 
@@ -119,11 +119,11 @@ func (m *Matcher) findBestSubset(expected []common.TransactionRecord, actual *co
 	if len(candidates) > m.Config.MaxSubsetSize {
 		// Sort by amount proximity and take top candidates
 		sort.Slice(candidates, func(i, j int) bool {
-			diffI := actual.AmountCentavos - candidates[i].AmountCentavos
+			diffI := actual.AmountCents - candidates[i].AmountCents
 			if diffI < 0 {
 				diffI = -diffI
 			}
-			diffJ := actual.AmountCentavos - candidates[j].AmountCentavos
+			diffJ := actual.AmountCents - candidates[j].AmountCents
 			if diffJ < 0 {
 				diffJ = -diffJ
 			}
@@ -133,7 +133,7 @@ func (m *Matcher) findBestSubset(expected []common.TransactionRecord, actual *co
 	}
 
 	// Use dynamic programming to find best subset sum
-	return m.solveSubsetSum(candidates, actual.AmountCentavos)
+	return m.solveSubsetSum(candidates, actual.AmountCents)
 }
 
 // solveSubsetSum finds a subset of transactions that sum closest to the target amount.
@@ -144,7 +144,7 @@ func (m *Matcher) solveSubsetSum(transactions []common.TransactionRecord, target
 	}
 
 	// DP table: dp[i][j] = can we achieve sum j using first i items?
-	maxSum := int(targetAmount + (m.Config.AmountToleranceCentavos * 2))
+	maxSum := int(targetAmount + (m.Config.AmountToleranceCents * 2))
 	if maxSum < 0 {
 		maxSum = int(targetAmount + 10000)
 	}
@@ -169,7 +169,7 @@ func (m *Matcher) solveSubsetSum(transactions []common.TransactionRecord, target
 
 	// Fill DP table
 	for i := 1; i <= n; i++ {
-		amount := int(transactions[i-1].AmountCentavos)
+		amount := int(transactions[i-1].AmountCents)
 		for j := 0; j <= maxSum; j++ {
 			// Don't take item i-1
 			if dp[i-1][j] {
@@ -214,7 +214,7 @@ func (m *Matcher) solveSubsetSum(transactions []common.TransactionRecord, target
 	for i := n; i > 0 && j > 0; i-- {
 		if parent[i][j] == 1 {
 			result = append([]common.TransactionRecord{transactions[i-1]}, result...)
-			j -= int(transactions[i-1].AmountCentavos)
+			j -= int(transactions[i-1].AmountCents)
 		}
 	}
 
@@ -225,17 +225,17 @@ func (m *Matcher) solveSubsetSum(transactions []common.TransactionRecord, target
 func (m *Matcher) scoreSubsetMatch(subset []common.TransactionRecord, actual *common.TransactionRecord) float64 {
 	totalAmount := int64(0)
 	for _, txn := range subset {
-		totalAmount += txn.AmountCentavos
+		totalAmount += txn.AmountCents
 	}
 
-	diff := totalAmount - actual.AmountCentavos
+	diff := totalAmount - actual.AmountCents
 	if diff < 0 {
 		diff = -diff
 	}
 
-	if diff > m.Config.AmountToleranceCentavos*2 {
+	if diff > m.Config.AmountToleranceCents*2 {
 		return 0
 	}
 
-	return 1.0 - (float64(diff) / float64(m.Config.AmountToleranceCentavos*2))
+	return 1.0 - (float64(diff) / float64(m.Config.AmountToleranceCents*2))
 }

@@ -7,17 +7,17 @@ import (
 
 // MatcherConfig contains configuration for fuzzy matching.
 type MatcherConfig struct {
-	AmountToleranceCentavos int64
-	DateWindowDays          int
-	CounterpartyThreshold   float64
+	AmountToleranceCents  int64
+	DateWindowDays        int
+	CounterpartyThreshold float64
 }
 
 // DefaultConfig returns default fuzzy matcher configuration.
 func DefaultConfig() *MatcherConfig {
 	return &MatcherConfig{
-		AmountToleranceCentavos: 100,    // 1 BRL tolerance
-		DateWindowDays:          3,      // 3-day window
-		CounterpartyThreshold:   0.80,   // 80% similarity
+		AmountToleranceCents:  100,  // 1 BRL tolerance
+		DateWindowDays:        3,    // 3-day window
+		CounterpartyThreshold: 0.80, // 80% similarity
 	}
 }
 
@@ -71,10 +71,10 @@ func (m *Matcher) Match(expected, actual []common.TransactionRecord) (
 		if bestActualIdx >= 0 {
 			act := actual[bestActualIdx]
 			pairs = append(pairs, matching.ReconciliationPair{
-				Expected:        exp,
-				Actual:          act,
-				MatchType:       matching.MatchTypeFuzzy,
-				ConfidenceScore: bestScore,
+				Expected:           exp,
+				Actual:             act,
+				MatchType:          matching.MatchTypeFuzzy,
+				ConfidenceScore:    bestScore,
 				DiscrepancyDetails: m.computeDiscrepancies(&exp, &act),
 			})
 			matchedExpectedIndices[i] = true
@@ -103,17 +103,17 @@ func (m *Matcher) Match(expected, actual []common.TransactionRecord) (
 // scoreMatch computes a match score between 0 and 1 for two records.
 func (m *Matcher) scoreMatch(expected, actual *common.TransactionRecord) float64 {
 	// Amount score
-	amountDiff := expected.AmountCentavos - actual.AmountCentavos
+	amountDiff := expected.AmountCents - actual.AmountCents
 	if amountDiff < 0 {
 		amountDiff = -amountDiff
 	}
 
 	amountScore := 1.0
-	if amountDiff > m.Config.AmountToleranceCentavos {
-		if amountDiff > m.Config.AmountToleranceCentavos*2 {
+	if amountDiff > m.Config.AmountToleranceCents {
+		if amountDiff > m.Config.AmountToleranceCents*2 {
 			return 0 // Disqualify if amount difference is too large
 		}
-		amountScore = 1.0 - (float64(amountDiff) / float64(m.Config.AmountToleranceCentavos*2))
+		amountScore = 1.0 - (float64(amountDiff) / float64(m.Config.AmountToleranceCents*2))
 	}
 
 	// Date score
@@ -144,8 +144,8 @@ func (m *Matcher) scoreMatch(expected, actual *common.TransactionRecord) float64
 // computeDiscrepancies identifies differences between two matched records.
 func (m *Matcher) computeDiscrepancies(expected, actual *common.TransactionRecord) *matching.DiscrepancyDetails {
 	details := &matching.DiscrepancyDetails{
-		AmountDifferenceCentavos: expected.AmountCentavos - actual.AmountCentavos,
-		FeeDifferenceCentavos:    expected.FeeCentavos - actual.FeeCentavos,
+		AmountDifferenceCents: expected.AmountCents - actual.AmountCents,
+		FeeDifferenceCents:    expected.FeeCents - actual.FeeCents,
 	}
 
 	dateDiff := expected.TransactionDate.Sub(actual.TransactionDate)
